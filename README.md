@@ -1,6 +1,6 @@
 Built ggsol.io & mcrc.space
-ggsol.io - solana casino game - fully running
-mcrc.space - solana & evm & bank casino game(any payment available) - it's currently UI updating now
+- _ggsol.io_ - solana casino game - fully running
+- _mcrc.space_ - solana & evm & bank casino game(any payment available) - it's currently UI updating now
 
 <img width="1913" height="906" alt="image" src="https://github.com/user-attachments/assets/7c98e48e-1f29-4d1f-8e06-24acd1ec3d43" />
 
@@ -53,8 +53,9 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 # 👨‍💻 Author
-### 📞 Telegram: [0xOpsDev](https://t.me/its0xopsdev)   
-https://t.me/its0xopsdev
+DM me on telegram for full working version of this project
+### 📞 Telegram: [d0sc4u](https://t.me/d0sc4u)   
+https://t.me/d0sc4u
 
 
 Once we connect on Telegram, we can discuss further details through other communication channels.
