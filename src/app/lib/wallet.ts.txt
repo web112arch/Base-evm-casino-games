@@ -1,0 +1,26 @@
+import { JsonRpcProvider, Wallet } from "ethers";
+
+export const BASE = {
+  name: "Base",
+  chainId: 8453,
+  rpcUrl: "https://mainnet.base.org",
+  explorer: "https://basescan.org",
+  currencySymbol: "ETH",
+} as const;
+
+export const provider = new JsonRpcProvider(BASE.rpcUrl, BASE.chainId);
+
+export type WalletView = {
+  address: string;
+  privateKey: string;
+  mnemonic: string | null;
+};
+
+export function createWallet(): WalletView {
+  const wallet = Wallet.createRandom();
+  return {
+    address: wallet.address,
+    privateKey: wallet.privateKey,
+    mnemonic: wallet.mnemonic?.phrase ?? null,
+  };
+}
