@@ -1,0 +1,49 @@
+import { useState } from "react";
+import { createWallet } from "../lib/wallet";
+
+type WalletView = {
+  address: string;
+  privateKey: string;
+  mnemonic: string | null;
+};
+
+export default function Home() {
+  const [wallet, setWallet] = useState<WalletView | null>(null);
+
+  return (
+    <main style={{ padding: 24, fontFamily: "sans-serif" }}>
+      <h1>PixWallet (Base-only)</h1>
+      <p>Gerar carteira local (modo educacional).</p>
+
+      <button
+        onClick={() => setWallet(createWallet())}
+        style={{ padding: "10px 14px", cursor: "pointer" }}
+      >
+        Gerar nova carteira
+      </button>
+
+      {wallet && (
+        <div style={{ marginTop: 18 }}>
+          <h2>Sua carteira</h2>
+
+          <div style={{ marginTop: 10 }}>
+            <strong>Endereço:</strong>
+            <div style={{ wordBreak: "break-all" }}>{wallet.address}</div>
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <strong>Chave privada (NÃO compartilhe):</strong>
+            <div style={{ wordBreak: "break-all" }}>{wallet.privateKey}</div>
+          </div>
+
+          {wallet.mnemonic && (
+            <div style={{ marginTop: 10 }}>
+              <strong>Seed phrase (NÃO compartilhe):</strong>
+              <div style={{ wordBreak: "break-all" }}>{wallet.mnemonic}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </main>
+  );
+}
