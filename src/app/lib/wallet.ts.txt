@@ -1,4 +1,5 @@
-import { JsonRpcProvider, Wallet } from "ethers";
+import CryptoJS from "crypto-js";
+import { Wallet } from "ethers";
 
 export const BASE = {
   name: "Base",
@@ -8,13 +9,45 @@ export const BASE = {
   currencySymbol: "ETH",
 } as const;
 
-export const provider = new JsonRpcProvider(BASE.rpcUrl, BASE.chainId);
-
 export type WalletView = {
   address: string;
   privateKey: string;
   mnemonic: string | null;
 };
+
+const VAULT_KEY = "pixwallet:vault:v1";
+const PBKDF2_ITERATIONS = 210_000; // razoável para 2026 (pode ajustar)
+
+type VaultPayload = {
+  v: 1;
+  kdf: "pbkdf2-sha256";
+  iter: number;
+  salt: string; // hex
+  iv: string; // hex
+  ct: string; // base64
+};
+
+function requireBrowser() {
+  if (typeof window === "undefined") {
+    throw new Error("Vault functions must run in the browser.");
+  }
+}
+
+function toHex(wordArray: CryptoJS.lib.WordArray) {
+  return CryptoJS.enc.Hex.stringify(wordArray);
+}
+
+function fromHex(hex: string) {
+  return CryptoJS.enc.Hex.parse(hex);
+}
+
+function deriveKey(password: string, saltHex: string, iterations: number) {
+  return CryptoJS.PBKDF2(password, fromHex(saltHex), {
+    keySize: 32 / 4, // 32 bytes = 256-bit
+    iterations,
+    hasher: CryptoJS.algo.SHA256,
+  });
+}
 
 export function createWallet(): WalletView {
   const wallet = Wallet.createRandom();
@@ -23,4 +56,106 @@ export function createWallet(): WalletView {
     privateKey: wallet.privateKey,
     mnemonic: wallet.mnemonic?.phrase ?? null,
   };
+}
+
+/**
+ * Criptografa e salva a wallet no localStorage usando AES-256 (key via PBKDF2).
+ * Salva privateKey + mnemonic. O address é derivável mas também guardamos por conveniência.
+ */
+export function vaultSave(wallet: WalletView, password: string) {
+  requireBrowser();
+  if (!password || password.trim().length < 8) {
+    throw new Error("Use uma senha com pelo menos 8 caracteres.");
+  }
+
+  const salt = CryptoJS.lib.WordArray.random(16);
+  const iv = CryptoJS.lib.WordArray.random(16);
+
+  const saltHex = toHex(salt);
+  const ivHex = toHex(iv);
+
+  const key = deriveKey(password, saltHex, PBKDF2_ITERATIONS);
+
+  const plaintext = JSON.stringify({
+    address: wallet.address,
+    privateKey: wallet.privateKey,
+    mnemonic: wallet.mnemonic,
+  });
+
+  const encrypted = CryptoJS.AES.encrypt(plaintext, key, {
+    iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  const payload: VaultPayload = {
+    v: 1,
+    kdf: "pbkdf2-sha256",
+    iter: PBKDF2_ITERATIONS,
+    salt: saltHex,
+    iv: ivHex,
+    ct: encrypted.toString(), // base64
+  };
+
+  localStorage.setItem(VAULT_KEY, JSON.stringify(payload));
+}
+
+/**
+ * Descriptografa a wallet do localStorage. Lança erro se a senha estiver errada.
+ */
+export function vaultLoad(password: string): WalletView {
+  requireBrowser();
+  const raw = localStorage.getItem(VAULT_KEY);
+  if (!raw) throw new Error("Nenhum cofre encontrado. Salve uma wallet primeiro.");
+
+  let payload: VaultPayload;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    throw new Error("Cofre corrompido (JSON inválido).");
+  }
+
+  if (payload?.v !== 1 || payload.kdf !== "pbkdf2-sha256") {
+    throw new Error("Formato de cofre não suportado.");
+  }
+
+  const key = deriveKey(password, payload.salt, payload.iter);
+
+  const decrypted = CryptoJS.AES.decrypt(payload.ct, key, {
+    iv: fromHex(payload.iv),
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  const plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+  if (!plaintext) {
+    throw new Error("Senha incorreta (não foi possível descriptografar).");
+  }
+
+  let data: any;
+  try {
+    data = JSON.parse(plaintext);
+  } catch {
+    throw new Error("Cofre corrompido (conteúdo inválido).");
+  }
+
+  if (!data?.privateKey || !data?.address) {
+    throw new Error("Cofre corrompido (campos ausentes).");
+  }
+
+  return {
+    address: data.address,
+    privateKey: data.privateKey,
+    mnemonic: data.mnemonic ?? null,
+  };
+}
+
+export function vaultExists(): boolean {
+  requireBrowser();
+  return Boolean(localStorage.getItem(VAULT_KEY));
+}
+
+export function vaultDelete() {
+  requireBrowser();
+  localStorage.removeItem(VAULT_KEY);
 }
