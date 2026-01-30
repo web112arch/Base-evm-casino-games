@@ -1,8 +1,27 @@
-Built ggsol.io & mcrc.space
-- _ggsol.io_ - solana casino game - fully running
-- _mcrc.space_ - solana & evm & bank casino game(any payment available) - it's currently UI updating now
-  
-Landing page
+# Base EVM Casino Games (Base-only)
+
+Fork of **d0sc4u/solana-evm-casino-games**, configured to run **exclusively on the Base network**.
+
+## Network
+- Chain: Base (Mainnet)
+- Chain ID: 8453
+- RPC: https://mainnet.base.org
+- Explorer: https://basescan.org
+
+## Fork Information
+This repository is a fork of:
+- Upstream: https://github.com/d0sc4u/solana-evm-casino-games
+
+Main changes in this fork:
+- Base-only (no multi-chain support)
+- Network configuration locked to Base
+- Project structure and security improvements
+
+## Getting Started
+```bash
+npm install
+npm run dev 
+
 <img width="1913" height="906" alt="image" src="https://github.com/user-attachments/assets/7c98e48e-1f29-4d1f-8e06-24acd1ec3d43" />
 Roulette page
 <img width="1911" height="906" alt="image" src="https://github.com/user-attachments/assets/5bcf16cd-a250-42a3-84c8-1f0903624057" />
@@ -59,11 +78,4 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-# 👨‍💻 Author
-DM me on telegram for full working version of this project
-### 📞 Telegram: [d0sc4u](https://t.me/d0sc4u)   
-https://t.me/d0sc4u
-
-
-Once we connect on Telegram, we can discuss further details through other communication channels.
 
