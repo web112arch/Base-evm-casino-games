@@ -1,7 +1,0 @@
-import { JsonRpcProvider } from "ethers";
-import { BASE_NETWORK } from "../config/base";
-
-export const baseProvider = new JsonRpcProvider(
-  BASE_NETWORK.rpcUrl,
-  BASE_NETWORK.chainId
-);
